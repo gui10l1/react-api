@@ -1,28 +1,52 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import api from "./services/api";
 
 import "./styles.css";
 
 function App() {
+  const [repositories, setRepository] = useState([]);
+
+  useEffect(() => {
+    api.get("/repositories").then((response) => {
+      setRepository(response.data);
+		});
+  }, []);
+
   async function handleAddRepository() {
-    // TODO
+    const repository = {
+			title: `Repository ${Date.now()}`,
+			url: `www.github.com/gui10l1/repositories/${Date.now()}`,
+			techs: [
+				"React",
+				"JS",
+				"JSX"
+			]
+		};
+
+    const response = await api.post("/repositories", repository);
+
+    setRepository([...repositories, response.data]);
   }
 
   async function handleRemoveRepository(id) {
-    // TODO
+		const response = await api.delete(`repositories/${id}`);
+
+		const repositoryIndex = repositories.findIndex(repository => id === repository.id);
+		setRepository(repositories.filter(repository => id !== repository.id))
   }
 
   return (
     <div>
       <ul data-testid="repository-list">
-        <li>
-          Repositório 1
-
-          <button onClick={() => handleRemoveRepository(1)}>
-            Remover
-          </button>
-        </li>
+        {repositories.map((repository) => (
+          <li key={repository.id}>
+            {repository.title}
+            <button onClick={() => handleRemoveRepository(repository.id)}>
+              Remover
+            </button>
+          </li>
+				))}
       </ul>
-
       <button onClick={handleAddRepository}>Adicionar</button>
     </div>
   );
